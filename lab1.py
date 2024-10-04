@@ -3,46 +3,19 @@ import pygame
 from OpenGL.GL import *
 from OpenGL.GLU import *
 
-# Функция для рисования ёлки
-def draw_tree():
-    width = 1.0  
-    height = 0.5      
-
-    glBegin(GL_TRIANGLES)
-    glColor3f(0.0, 1.0, 0.0)  # Зелёный цвет
-    glVertex3f(0.0, height, 0.0)  # Верхушка
-    glVertex3f(-width / 2, 0.0, 0.0)  # Левый угол
-    glVertex3f(width / 2, 0.0, 0.0)   # Правый угол
-    glEnd()
-
-
-    glBegin(GL_TRIANGLES)
-    glColor3f(0.0, 1.0, 0.0)  
-    glVertex3f(0.0, height * 2, 0.0)  
-    glVertex3f(-width / 2, height, 0.0) 
-    glVertex3f(width / 2, height, 0.0)   
-    glEnd()
-
-
-    glBegin(GL_TRIANGLES)
-    glColor3f(0.0, 1.0, 0.0)  
-    glVertex3f(0.0, height * 3, 0.0) 
-    glVertex3f(-width / 2, height * 2, 0.0) 
-    glVertex3f(width / 2, height * 2, 0.0)   
-    glEnd()
-
-def draw_trunk():
+def draw_z2():
+    glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
+    glColor3d(1,1,1)
     glBegin(GL_QUADS)
-    glColor3f(0.5, 0.25, 0.1)  # Коричневый цвет
-    glVertex3f(-0.1, 0.0, 0.0)  # Левый нижний угол
-    glVertex3f(0.1, 0.0, 0.0)   # Правый нижний угол
-    glVertex3f(0.1, -0.4, 0.0)  # Правый верхний угол
-    glVertex3f(-0.1, -0.4, 0.0) # Левый верхний угол
-    glEnd()
+    glVertex3d(-1,-1,0)
+    glVertex3d(-1, 1,0)
+    glVertex3d( 1, 1,0)
+    glVertex3d( 1,-1,0)
+    glEnd() 
 
 if __name__ == "__main__":
     pygame.init()
-    display = (400, 600)
+    display = (1000, 1000)
     pygame.display.set_mode(display, pygame.DOUBLEBUF | pygame.OPENGL)
     gluPerspective(45, (display[0] / display[1]), 0.1, 50.0)
     glTranslatef(0.0, 0.0, -5)
@@ -53,10 +26,17 @@ if __name__ == "__main__":
                 pygame.quit()
                 sys.exit()
 
-
-        # Рисуем ёлку и пень
-        draw_tree()
-        draw_trunk()
+        glEnable(GL_DEPTH_TEST)
+        glEnable(GL_COLOR_MATERIAL)
+        glEnable(GL_LIGHTING)
+        glEnable(GL_LIGHT0)
+        glLightfv(GL_LIGHT0, GL_POSITION, (3,3,3,0.5))
+        glLightfv(GL_LIGHT0, GL_SPOT_DIRECTION, (-1,-1,-1))
+        glMaterialfv(GL_FRONT, GL_SPECULAR, (1,1,1,1))
+        glMaterialf(GL_FRONT, GL_SHININESS, 128.0)
+        glLighti(GL_LIGHT0, GL_SPOT_EXPONENT, 0)
+        draw_z2()
 
         pygame.display.flip()
         pygame.time.wait(10)
+
