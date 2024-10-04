@@ -8,15 +8,14 @@ def draw_tree():
     width = 1.0  
     height = 0.5      
 
-    glBegin(GL_TRIANGLES)
+    '''glBegin(GL_TRIANGLES)
     glColor3f(0.0, 1.0, 0.0)  # Зелёный цвет
     glVertex3f(0.0, height, 0.0)  # Верхушка
     glVertex3f(-width / 2, 0.0, 0.0)  # Левый угол
     glVertex3f(width / 2, 0.0, 0.0)   # Правый угол
-    glEnd()
+    glEnd()'''
 
-
-    glBegin(GL_TRIANGLES)
+    '''glBegin(GL_TRIANGLES)
     glColor3f(0.0, 1.0, 0.0)  
     glVertex3f(0.0, height * 2, 0.0)  
     glVertex3f(-width / 2, height, 0.0) 
@@ -29,6 +28,27 @@ def draw_tree():
     glVertex3f(0.0, height * 3, 0.0) 
     glVertex3f(-width / 2, height * 2, 0.0) 
     glVertex3f(width / 2, height * 2, 0.0)   
+    glEnd()'''
+
+    glBegin(GL_TRIANGLES)
+    glColor3f(0.0, 1.0, 0.0)  # Зелёный цвет
+    glVertex3f(0.0, height, 0.0)  # Верхушка
+    glVertex3f(-width / 2, 0.0, 0.0)  # Левый угол
+    glVertex3f(width / 2, 0.0, 0.0)   # Правый угол
+    glEnd()
+
+    glBegin(GL_TRIANGLES)
+    glColor3f(0.0, 1.0, 0.0)  # Зелёный цвет
+    glVertex3f(0.0, height * 2, 0.0)  # Верхушка
+    glVertex3f(-width / 2 * 0.8, height, 0.0)  # Левый угол
+    glVertex3f(width / 2 * 0.8, height, 0.0)   # Правый угол
+    glEnd()
+
+    glBegin(GL_TRIANGLES)
+    glColor3f(0.0, 1.0, 0.0)  # Зелёный цвет
+    glVertex3f(0.0, height * 3, 0.0)  # Верхушка
+    glVertex3f(-width / 2 * 0.6, height * 2, 0.0)  # Левый угол
+    glVertex3f(width / 2 * 0.6, height * 2, 0.0)   # Правый угол
     glEnd()
 
 def draw_trunk():
