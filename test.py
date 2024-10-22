@@ -2,87 +2,117 @@ import pygame
 from pygame.locals import *
 from OpenGL.GL import *
 from OpenGL.GLU import *
-from PIL import Image
+from OpenGL.GLUT import *
 
-# Функция для загрузки текстуры
-def load_texture(file_path):
-    texture = glGenTextures(1)
-    image = Image.open(file_path)
-    image = image.transpose(Image.FLIP_TOP_BOTTOM)  # Поворот изображения
-    image_data = image.convert("RGBA").tobytes()
-    
-    glBindTexture(GL_TEXTURE_2D, texture)
+def load_texture(image_path):
+    texture_surface = pygame.image.load(image_path)
+    texture_data = pygame.image.tostring(texture_surface, "RGB", 1)
+    width = texture_surface.get_width()
+    height = texture_surface.get_height()
+    texture_id = glGenTextures(1)
+    glBindTexture(GL_TEXTURE_2D, texture_id)
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT)
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, texture_data)
     
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, image.width, image.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, image_data)
+    return texture_id
+
+def resize(width, height):
+    glViewport(0, 0, width, height)
+    glMatrixMode(GL_PROJECTION)
+    glLoadIdentity()
+    gluPerspective(45, (width / height), 0.1, 50.0)
+    glTranslatef(0.0, 0.0, -20)
+    glMatrixMode(GL_MODELVIEW)
+
+def enable_texture_mapping():
+    glEnable(GL_TEXTURE_GEN_S)
+    glEnable(GL_TEXTURE_GEN_T)
+    glTexGeni(GL_S, GL_TEXTURE_GEN_MODE, GL_OBJECT_LINEAR)
+    glTexGeni(GL_T, GL_TEXTURE_GEN_MODE, GL_OBJECT_LINEAR)
+
+def disable_texture_mapping():
+    glDisable(GL_TEXTURE_GEN_S)
+    glDisable(GL_TEXTURE_GEN_T)
+
+def draw_olympic_rings(texture_ids):
+    positions = [
+        (-2.5, 1, 0),
+        (0, 1, 0),
+        (2.5, 1, 0), 
+        (-1.2, 0, 0), 
+        (1.2, 0, 0)
+    ]
+
+    glEnable(GL_TEXTURE_2D)
+
+    for i, pos in enumerate(positions):
+        glBindTexture(GL_TEXTURE_2D, texture_ids[i])
+        glPushMatrix()
+        glTranslatef(*pos)
+
+        enable_texture_mapping()
+        glutSolidTorus(0.35, 1.0, 30, 30) ####
+        disable_texture_mapping()
+
+        glPopMatrix()
+
+    glDisable(GL_TEXTURE_2D)
+
+def init_lighting():
+    glEnable(GL_DEPTH_TEST)
+    glEnable(GL_COLOR_MATERIAL)
+    glEnable(GL_LIGHTING)
+
+    glEnable(GL_LIGHT0)
+    glLightfv(GL_LIGHT0, GL_POSITION, [0.0, 5.0, 0.0, 1.0])
     
-    return texture
+    glLightfv(GL_LIGHT0, GL_DIFFUSE, [1.0, 1.0, 1.0, 1.0]) 
+    glLightfv(GL_LIGHT0, GL_SPECULAR, [1.0, 1.0, 1.0, 1.0])
 
-# Определение вершин куба и его текстурных координат
-vertices = [
-    (1, -1, -1),
-    (1, 1, -1),
-    (-1, 1, -1),
-    (-1, -1, -1),
-    (1, -1, 1),
-    (1, 1, 1),
-    (-1, -1, 1),
-    (-1, 1, 1),
-]
-
-edges = [
-    (0, 1), (1, 2), (2, 3), (3, 0), 
-    (4, 5), (5, 6), (6, 7), (7, 4),
-    (0, 4), (1, 5), (2, 7), (3, 6)
-]
-
-faces = [
-    (0, 1, 2, 3),
-    (3, 2, 7, 6),
-    (6, 5, 1, 2),
-    (5, 4, 0, 1),
-    (4, 7, 3, 0),
-    (7, 6, 5, 4)
-]
-
-# Текстурные координаты
-texture_coords = [
-    (0, 0), (1, 0), (1, 1), (0, 1),
-]
-
-# Функция для отрисовки куба с текстурой
-def draw_cube(texture):
-    glBegin(GL_QUADS)
-    for i, face in enumerate(faces):
-        glBindTexture(GL_TEXTURE_2D, texture)
-        for j in range(4):
-            glTexCoord2f(texture_coords[j][0], texture_coords[j][1])  # Установка текстурных координат
-            glVertex3fv(vertices[face[j]])  # Установка вершин
-    glEnd()
-
-# Инициализация Pygame и OpenGL
-pygame.init()
-display = (800, 600)
-pygame.display.set_mode(display, DOUBLEBUF | OPENGL)
-gluPerspective(45, (display[0] / display[1]), 0.1, 50.0)
-glTranslatef(0.0, 0.0, -5)
-
-# Загрузка текстуры
-texture = load_texture('tekstura.png')  # Укажите путь к вашей текстуре
-
-# Основной игровой цикл
-while True:
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            pygame.quit()
-            quit()
+    glEnable(GL_LIGHT1)
+    glLightfv(GL_LIGHT1, GL_POSITION, [-5.0, 3.0, 5.0, 1.0])
     
-    # Поворот куба
-    glRotatef(1, 0, 1, 0)
-    
-    # Очистка и отрисовка
+    glLightfv(GL_LIGHT1, GL_DIFFUSE, [1.0, 1.0, 1.0, 1.0]) 
+    glLightfv(GL_LIGHT1, GL_SPECULAR, [1.0, 1.0, 1.0, 1.0]) 
+
+    glEnable(GL_LIGHT2)
+    glLightfv(GL_LIGHT2, GL_POSITION, [5.0, 5.0, 0.0, 1.0])
+    glLightfv(GL_LIGHT2, GL_SPOT_DIRECTION, [-1.0, -1.0, -1.0])
+
+    glLightfv(GL_LIGHT2, GL_DIFFUSE, [1.0, 1.0, 1.0, 1.0])  
+    glLightfv(GL_LIGHT2, GL_SPECULAR, [1.0, 1.0, 1.0, 1.0])  
+
+def display(texture_ids):
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
-    draw_cube(texture)
+    draw_olympic_rings(texture_ids)
     pygame.display.flip()
-    pygame.time.wait(10)
+
+def main():
+    pygame.init()
+    screen = pygame.display.set_mode((600, 600), DOUBLEBUF | OPENGL)
+    pygame.display.set_caption("Олимпийские кольца с текстурами")
+    glutInit() 
+    resize(600, 600)
+    glClearColor(0.1, 0.1, 0.1, 1)
+    init_lighting()
+
+    textures = [
+        load_texture("tekstura.png")
+    ]
+
+    clock = pygame.time.Clock()
+    running = True
+    while running:
+        for event in pygame.event.get():
+            if event.type == QUIT:
+                running = False
+        display(textures)
+        clock.tick(60)
+
+    pygame.quit()
+
+if __name__ == '__main__':
+    main()
