@@ -3,6 +3,50 @@ from pygame.locals import *
 from OpenGL.GL import *
 from OpenGL.GLU import *
 import numpy as np
+import math
+
+rotation_angles = [0, 0, 0, 0, 0]
+camera_angle_x = 0
+camera_angle_y = 0
+camera_distance = 1
+mouse_pressed = False
+
+def update_rotation():
+    global rotation_angles
+    rotation_speeds = [5, -1, 1.5, -2, 10]
+    for i in range(len(rotation_angles)):
+        rotation_angles[i] += rotation_speeds[i]
+        rotation_angles[i] %= 360  
+
+def handle_mouse_motion(x, y):
+    global camera_angle_x, camera_angle_y, last_mouse_x, last_mouse_y
+    if mouse_pressed:  
+        dx = x - last_mouse_x
+        dy = y - last_mouse_y
+        camera_angle_x += dx * 0.2  
+        camera_angle_y += dy * 0.2
+    last_mouse_x = x
+    last_mouse_y = y
+
+def handle_mouse_button(button, pressed):
+    global mouse_pressed
+    if button == 1:
+        mouse_pressed = pressed
+
+def apply_camera():
+    glLoadIdentity()
+    eye_x = camera_distance * math.sin(math.radians(camera_angle_x)) * math.cos(math.radians(camera_angle_y))
+    eye_y = camera_distance * math.sin(math.radians(camera_angle_y))
+    eye_z = camera_distance * math.cos(math.radians(camera_angle_x)) * math.cos(math.radians(camera_angle_y))
+
+    gluLookAt(eye_x, eye_y, eye_z, 0, 0, 0, 0, 1, 0)
+
+def draw_glaza(radius, slices, stacks):
+    # Создание сферы для головы
+    quadric = gluNewQuadric()
+    gluQuadricNormals(quadric, GLU_SMOOTH)
+    glColor3f(0.0, 0.6, 0.0)  # Оранжевый цвет
+    gluSphere(quadric, radius, slices, stacks)
 
 # Определяем вершины и рёбра человека
 def draw_sphere(radius, slices, stacks):
@@ -50,25 +94,47 @@ def draw_marsianin():
         draw_cylinder(0.05, 0.5, 10)
         glPopMatrix()
 
+    #рисуем глаза
+    for x in [-0.1, 0.1]:
+        glPushMatrix()
+        glTranslatef(x, 0.8, 1.8)  
+        draw_glaza(0.05, 20, 20)
+        glPopMatrix()
+
+def display():
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
+    apply_camera() 
+    draw_marsianin()
+    pygame.display.flip()
+
 def main():
+    global last_mouse_x, last_mouse_y
+
     pygame.init()
-    display = (1000, 1000)
-    pygame.display.set_mode(display, DOUBLEBUF | OPENGL)
-    gluPerspective(45, (display[0] / display[1]), 0.1, 50.0)
-    glTranslatef(0.0, 0.0, -5)
+    screen = pygame.display.set_mode((1000, 1000), DOUBLEBUF | OPENGL)
+    glClearColor(0.1, 0.1, 0.1, 1)
 
-    rot = [0, 0]
+    clock = pygame.time.Clock()
+    running = True
+    last_mouse_x, last_mouse_y = pygame.mouse.get_pos()
+    pygame.mouse.set_visible(True)
 
-    while True:
+    while running:
         for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                pygame.quit()
-                return
+            if event.type == QUIT:
+                running = False
+            if event.type == MOUSEMOTION:
+                handle_mouse_motion(*event.pos)
+            if event.type == MOUSEBUTTONDOWN:
+                handle_mouse_button(event.button, True)
+            if event.type == MOUSEBUTTONUP:
+                handle_mouse_button(event.button, False)
 
-        glRotatef(1, 1, 0, 0) 
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
-        draw_marsianin()
-        pygame.display.flip()
-        pygame.time.wait(10)
+        update_rotation() 
+        display()
+        clock.tick(60)
 
-main()
+    pygame.quit()
+
+if __name__ == '__main__':
+    main()
