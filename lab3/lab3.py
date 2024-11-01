@@ -11,10 +11,6 @@ last_x, last_y = 0, 0
 texture_id_body = None
 texture_id_eyes = None
 
-# Анимационные параметры
-walk_angle = 0
-walk_direction = 1  # 1 - вперед, -1 - назад
-
 def load_texture(body_image, eyes_image):
     global texture_id_body, texture_id_eyes
     
@@ -108,7 +104,6 @@ def draw_marsianin():
     glPushMatrix()
     glTranslatef(-0.2, -0.5, 0.2) 
     glRotatef(90, 1.0, 0.0, 0.0)
-    glRotatef(np.sin(np.radians(walk_angle)) * 30, 1.0, 0.0, 0.0)  # Анимация ноги
     draw_cylinder(0.1, 0.5)
     glPopMatrix()
 
@@ -116,7 +111,6 @@ def draw_marsianin():
     glPushMatrix()
     glTranslatef(0.2, -0.5, 0.2)
     glRotatef(90, 1.0, 0.0, 0.0)
-    glRotatef(-np.sin(np.radians(walk_angle)) * 30, 1.0, 0.0, 0.0)  # Анимация ноги
     draw_cylinder(0.1, 0.5)
     glPopMatrix()
 
@@ -124,7 +118,6 @@ def draw_marsianin():
     glPushMatrix()
     glTranslatef(-0.3, 0.2, 0.2)  
     glRotatef(90, 1.0, 0.0, 0.0)
-    glRotatef(-np.sin(np.radians(walk_angle)) * 30, 1.0, 0.0, 0.0)  # Анимация руки
     draw_cylinder(0.07, 0.6)
     glPopMatrix()
 
@@ -132,20 +125,11 @@ def draw_marsianin():
     glPushMatrix()
     glTranslatef(0.3, 0.2, 0.2)
     glRotatef(90, 1.0, 0.0, 0.0)
-    glRotatef(np.sin(np.radians(walk_angle)) * 30, 1.0, 0.0, 0.0)  # Анимация руки
     draw_cylinder(0.07, 0.6)
     glPopMatrix()
 
     # Глаза
     draw_eyes()
-
-def update_walk(value):
-    global walk_angle, walk_direction
-    walk_angle += walk_direction * 2  # Скорость ходьбы
-    if walk_angle > 30 or walk_angle < -30:
-        walk_direction *= -1  # смена направления движения ног
-    glutPostRedisplay()
-    glutTimerFunc(16, update_walk, 0)  # вызываем обновление (~60 FPS)
 
 def display():
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
@@ -192,17 +176,13 @@ def main():
     glutInit()
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH)
     glutInitWindowSize(800, 600)
-    glutCreateWindow(b"3D Marsianin with Texture and Animation")
+    glutCreateWindow(b"3D Marsianin with Texture")
 
     init()
     glutDisplayFunc(display)
     glutReshapeFunc(reshape)
     glutMouseFunc(mouse)
     glutMotionFunc(motion)
-
-    # Запуск анимации
-    glutTimerFunc(16, update_walk, 0)
-
     glutMainLoop()
 
 if __name__ == "__main__":
